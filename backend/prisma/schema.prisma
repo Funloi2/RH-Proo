@@ -1,13 +1,302 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
 
 generator client {
   provider = "prisma-client"
-  output   = "../generated/prisma"
+  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+// ============================================================================
+// ENUMS
+// ============================================================================
+
+enum GlobalRole {
+  USER
+  ADMIN
+}
+
+enum GroupRole {
+  MEMBER
+  DEPARTMENT_MANAGER
+}
+
+enum TimeSlot {
+  FULL_DAY
+  MORNING
+  AFTERNOON
+}
+
+enum LeaveStatus {
+  PENDING
+  ACCEPTED
+  REFUSED
+}
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+}
+
+enum Language {
+  EN
+  FR
+}
+
+// ============================================================================
+// USER
+// ============================================================================
+
+model User {
+  id            String     @id @default(uuid())
+  name          String
+  surname       String
+  email         String     @unique
+  phone         String?
+  birthday      DateTime?
+  city          String?
+  address       String?
+  postalCode    String?    @map("postal_code")
+  passwordHash  String?    @map("password_hash")
+  globalRole    GlobalRole @default(USER) @map("global_role")
+  language      Language   @default(FR)
+  isActive      Boolean    @default(true) @map("is_active")
+  isDeleted     Boolean    @default(false) @map("is_deleted")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  groupMemberships  GroupMembership[]
+  leaveRequests     LeaveRequest[]     @relation("LeaveRequester")
+  reviewedLeaves    LeaveRequest[]     @relation("LeaveReviewer")
+  leaveBalances     LeaveBalance[]
+  createdTasks      Task[]             @relation("TaskCreator")
+  assignedTasks     Task[]             @relation("TaskAssignee")
+  notifications     Notification[]
+  activityLogs      ActivityLog[]
+  passwordTokens    PasswordResetToken[]
+
+  @@map("users")
+}
+
+// ============================================================================
+// GROUP & MEMBERSHIP
+// ============================================================================
+
+model Group {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  members GroupMembership[]
+  tasks   Task[]
+
+  @@map("groups")
+}
+
+model GroupMembership {
+  id       String    @id @default(uuid())
+  userId   String    @map("user_id")
+  groupId  String    @map("group_id")
+  role     GroupRole  @default(MEMBER)
+  joinedAt DateTime  @default(now()) @map("joined_at")
+
+  // Relations
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  // A user can only appear once per group
+  @@unique([userId, groupId])
+  @@index([userId])
+  @@index([groupId])
+  @@map("group_memberships")
+}
+
+// ============================================================================
+// LEAVE TYPES (configurable by admin)
+// ============================================================================
+
+model LeaveType {
+  id           String   @id @default(uuid())
+  name         String   @unique           // internal key, e.g. "annual_leave"
+  labelEn      String   @map("label_en")  // English display name
+  labelFr      String   @map("label_fr")  // French display name
+  color        String   @default("#3B82F6") // hex color for calendar
+  isDeductible Boolean  @default(true) @map("is_deductible")
+  isActive     Boolean  @default(true) @map("is_active")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  leaveRequests LeaveRequest[]
+
+  @@map("leave_types")
+}
+
+// ============================================================================
+// LEAVE REQUEST & ATTACHMENTS
+// ============================================================================
+
+model LeaveRequest {
+  id           String      @id @default(uuid())
+  userId       String      @map("user_id")
+  leaveTypeId  String      @map("leave_type_id")
+  startDate    DateTime    @map("start_date") @db.Date
+  endDate      DateTime    @map("end_date") @db.Date
+  timeSlot     TimeSlot    @default(FULL_DAY) @map("time_slot")
+  status       LeaveStatus @default(PENDING)
+  notes        String?
+  reviewedBy   String?     @map("reviewed_by")
+  reviewedAt   DateTime?   @map("reviewed_at")
+  createdAt    DateTime    @default(now()) @map("created_at")
+  updatedAt    DateTime    @updatedAt @map("updated_at")
+
+  // Relations
+  user        User              @relation("LeaveRequester", fields: [userId], references: [id], onDelete: Cascade)
+  leaveType   LeaveType         @relation(fields: [leaveTypeId], references: [id])
+  reviewer    User?             @relation("LeaveReviewer", fields: [reviewedBy], references: [id])
+  attachments LeaveAttachment[]
+
+  // Prevent duplicate bookings for the same user on the same date+slot
+  @@unique([userId, startDate, endDate, timeSlot])
+  @@index([userId])
+  @@index([status])
+  @@index([startDate, endDate])
+  @@map("leave_requests")
+}
+
+model LeaveAttachment {
+  id             String   @id @default(uuid())
+  leaveRequestId String   @map("leave_request_id")
+  fileName       String   @map("file_name")
+  filePath       String   @map("file_path")
+  fileSize       Int      @map("file_size")     // bytes
+  mimeType       String   @map("mime_type")
+  uploadedAt     DateTime @default(now()) @map("uploaded_at")
+
+  // Relations
+  leaveRequest LeaveRequest @relation(fields: [leaveRequestId], references: [id], onDelete: Cascade)
+
+  @@index([leaveRequestId])
+  @@map("leave_attachments")
+}
+
+// ============================================================================
+// LEAVE BALANCE
+// ============================================================================
+
+model LeaveBalance {
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")
+  year             Int
+  totalAllowance   Float    @default(25) @map("total_allowance")
+  additionalDays   Float    @default(0) @map("additional_days")
+  adjustmentReason String?  @map("adjustment_reason")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // One balance record per user per year
+  @@unique([userId, year])
+  @@index([userId])
+  @@map("leave_balances")
+}
+
+// ============================================================================
+// TASK
+// ============================================================================
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  groupId     String     @map("group_id")
+  createdBy   String     @map("created_by")
+  assignedTo  String?    @map("assigned_to")
+  status      TaskStatus @default(OPEN)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  // Relations
+  group    Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  creator  User  @relation("TaskCreator", fields: [createdBy], references: [id])
+  assignee User? @relation("TaskAssignee", fields: [assignedTo], references: [id])
+
+  @@index([groupId])
+  @@index([assignedTo])
+  @@index([status])
+  @@map("tasks")
+}
+
+// ============================================================================
+// NOTIFICATION
+// ============================================================================
+
+model Notification {
+  id          String   @id @default(uuid())
+  recipientId String   @map("recipient_id")
+  typeKey     String   @map("type_key")     // e.g. "leave_approved", "task_assigned"
+  params      Json?                          // dynamic values for i18n template
+  isRead      Boolean  @default(false) @map("is_read")
+  relatedType String?  @map("related_type") // e.g. "leave_request", "task"
+  relatedId   String?  @map("related_id")   // id of the related entity
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  recipient User @relation(fields: [recipientId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, isRead])
+  @@index([recipientId, createdAt])
+  @@map("notifications")
+}
+
+// ============================================================================
+// ACTIVITY LOG
+// ============================================================================
+
+model ActivityLog {
+  id         String   @id @default(uuid())
+  actorId    String   @map("actor_id")
+  action     String                        // e.g. "leave_requested", "user_created"
+  targetType String?  @map("target_type")  // e.g. "leave_request", "user", "task"
+  targetId   String?  @map("target_id")
+  metadata   Json?                         // extra context as JSON
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // Relations
+  actor User @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+// ============================================================================
+// PASSWORD RESET TOKEN
+// ============================================================================
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tokenHash])
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
