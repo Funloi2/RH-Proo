@@ -9,6 +9,7 @@ import { UsersModule } from './users/users.module';
 import { GroupsModule } from './groups/groups.module';
 import { LeaveTypesModule } from './leave-types/leave-types.module';
 import { LeavesModule } from './leaves/leaves.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { LeavesModule } from './leaves/leaves.module';
     GroupsModule,
     LeaveTypesModule,
     LeavesModule,
+    TasksModule,
   ],
   providers: [
     {
