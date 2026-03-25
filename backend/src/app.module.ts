@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { GroupsModule } from './groups/groups.module';
 import { LeaveTypesModule } from './leave-types/leave-types.module';
+import { LeavesModule } from './leaves/leaves.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { LeaveTypesModule } from './leave-types/leave-types.module';
     UsersModule,
     GroupsModule,
     LeaveTypesModule,
+    LeavesModule,
   ],
   providers: [
     {
