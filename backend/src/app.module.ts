@@ -6,16 +6,15 @@ import { PrismaModule } from './prisma/prisma.module';
 import { MailModule } from './mail/mail.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { GroupsModule } from './groups/groups.module';
 
 @Module({
   imports: [
-    // Load .env file and make ConfigService available globally
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env'],
     }),
 
-    // Rate limiting: 10 requests per 60 seconds on throttled routes
     ThrottlerModule.forRoot({
       throttlers: [
         {
@@ -25,13 +24,12 @@ import { UsersModule } from './users/users.module';
       ],
     }),
 
-    // Global modules
     PrismaModule,
     MailModule,
 
-    // Feature modules
     AuthModule,
     UsersModule,
+    GroupsModule,
   ],
   providers: [
     {
