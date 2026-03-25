@@ -5,6 +5,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
 import { MailModule } from './mail/mail.module';
 import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { AuthModule } from './auth/auth.module';
     ThrottlerModule.forRoot({
       throttlers: [
         {
-          ttl: 60000,  // 60 seconds in milliseconds
+          ttl: 60000,
           limit: 10,
         },
       ],
@@ -30,9 +31,9 @@ import { AuthModule } from './auth/auth.module';
 
     // Feature modules
     AuthModule,
+    UsersModule,
   ],
   providers: [
-    // Apply rate limiting globally (individual routes can override)
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
