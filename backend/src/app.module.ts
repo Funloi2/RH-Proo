@@ -10,6 +10,7 @@ import { GroupsModule } from './groups/groups.module';
 import { LeaveTypesModule } from './leave-types/leave-types.module';
 import { LeavesModule } from './leaves/leaves.module';
 import { TasksModule } from './tasks/tasks.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { TasksModule } from './tasks/tasks.module';
     LeaveTypesModule,
     LeavesModule,
     TasksModule,
+    NotificationsModule,
   ],
   providers: [
     {
