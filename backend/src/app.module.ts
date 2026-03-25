@@ -7,6 +7,7 @@ import { MailModule } from './mail/mail.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { GroupsModule } from './groups/groups.module';
+import { LeaveTypesModule } from './leave-types/leave-types.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { GroupsModule } from './groups/groups.module';
     AuthModule,
     UsersModule,
     GroupsModule,
+    LeaveTypesModule,
   ],
   providers: [
     {
