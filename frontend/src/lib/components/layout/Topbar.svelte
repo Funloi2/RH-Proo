@@ -5,9 +5,8 @@
     import { apiGet, apiPatch } from '$lib/api/client';
     import { onMount } from 'svelte';
 
-    export let onToggleSidebar: () => void;
-
-    $: user = $authStore.user;
+    let { onToggleSidebar }: { onToggleSidebar: () => void } = $props();
+    let user = $derived($authStore.user);
 
     let showUserMenu = false;
     let showNotifDropdown = false;

@@ -4,8 +4,8 @@
     import { apiGet } from '$lib/api/client';
     import { onMount } from 'svelte';
 
-    $: user = $authStore.user;
-    $: isAdmin = user?.globalRole === 'ADMIN';
+    let user = $derived($authStore.user);
+    let isAdmin = $derived(user?.globalRole === 'ADMIN');
 
     let balance: any = null;
     let pendingLeaves: any[] = [];

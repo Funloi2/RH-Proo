@@ -3,11 +3,10 @@
     import { authStore } from '$lib/stores/auth';
     import { t } from '$lib/i18n';
 
-    export let open = false;
-
-    $: user = $authStore.user;
-    $: isAdmin = user?.globalRole === 'ADMIN';
-    $: currentPath = $page.url.pathname;
+    let { open = $bindable(false) } = $props();
+    let user = $derived($authStore.user);
+    let isAdmin = $derived(user?.globalRole === 'ADMIN');
+    let currentPath = $derived($page.url.pathname);
 
     interface NavItem {
         href: string;
@@ -27,7 +26,7 @@
         { href: '/activity-log', label: 'nav.activityLog', icon: '📋', adminOnly: true },
     ];
 
-    $: visibleItems = navItems.filter((item) => !item.adminOnly || isAdmin);
+    let visibleItems = $derived(navItems.filter((item) => !item.adminOnly || isAdmin));
 
     function isActive(href: string): boolean {
         if (href === '/dashboard') return currentPath === '/dashboard';
