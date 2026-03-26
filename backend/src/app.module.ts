@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { PrismaModule } from './prisma/prisma.module';
@@ -11,6 +12,7 @@ import { LeaveTypesModule } from './leave-types/leave-types.module';
 import { LeavesModule } from './leaves/leaves.module';
 import { TasksModule } from './tasks/tasks.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { ActivityLogModule } from './activity-log/activity-log.module';
 
 @Module({
   imports: [
@@ -18,6 +20,9 @@ import { NotificationsModule } from './notifications/notifications.module';
       isGlobal: true,
       envFilePath: ['.env'],
     }),
+
+    // Cron jobs (used by activity log archive)
+    ScheduleModule.forRoot(),
 
     ThrottlerModule.forRoot({
       throttlers: [
@@ -38,6 +43,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     LeavesModule,
     TasksModule,
     NotificationsModule,
+    ActivityLogModule,
   ],
   providers: [
     {
