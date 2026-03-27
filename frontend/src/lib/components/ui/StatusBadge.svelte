@@ -1,33 +1,21 @@
 <script lang="ts">
-    import { t } from '$lib/i18n';
-
-    let { page = 1, totalPages = 1, onPageChange }: {
-        page: number;
-        totalPages: number;
-        onPageChange: (page: number) => void;
+    let { label, color = 'gray' }: {
+        label: string;
+        color?: 'green' | 'red' | 'amber' | 'blue' | 'gray' | 'purple';
     } = $props();
+
+    const colorMap: Record<string, string> = {
+        green: 'bg-green-50 text-green-700 border-green-200',
+        red: 'bg-red-50 text-red-700 border-red-200',
+        amber: 'bg-amber-50 text-amber-700 border-amber-200',
+        blue: 'bg-blue-50 text-blue-700 border-blue-200',
+        gray: 'bg-gray-50 text-gray-700 border-gray-200',
+        purple: 'bg-purple-50 text-purple-700 border-purple-200',
+    };
+
+    let classes = $derived(colorMap[color] || colorMap.gray);
 </script>
 
-{#if totalPages > 1}
-    <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-        <p class="text-sm text-gray-500">
-            {$t('common.page')} {page} {$t('common.of')} {totalPages}
-        </p>
-        <div class="flex gap-2">
-            <button
-                    on:click={() => onPageChange(page - 1)}
-                    disabled={page <= 1}
-                    class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50"
-            >
-                {$t('common.previous')}
-            </button>
-            <button
-                    on:click={() => onPageChange(page + 1)}
-                    disabled={page >= totalPages}
-                    class="px-3 py-1.5 text-sm border border-gray-300 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-50"
-            >
-                {$t('common.next')}
-            </button>
-        </div>
-    </div>
-{/if}
+<span class="inline-flex px-2 py-0.5 text-xs font-medium rounded-full border {classes}">
+  {label}
+</span>
