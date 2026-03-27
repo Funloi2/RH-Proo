@@ -172,7 +172,7 @@ export class LeavesService {
         }
 
         // Cannot review your own request
-        if (leaveRequest.userId === reviewerId) {
+        if (leaveRequest.userId === reviewerId && reviewerRole !== GlobalRole.ADMIN) {
             throw new ForbiddenException('You cannot review your own leave request');
         }
 
