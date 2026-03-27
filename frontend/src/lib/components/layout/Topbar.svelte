@@ -6,22 +6,37 @@
     import { onMount } from 'svelte';
 
     let { onToggleSidebar }: { onToggleSidebar: () => void } = $props();
+
     let user = $derived($authStore.user);
 
-    let showUserMenu = false;
-    let showNotifDropdown = false;
-    let unreadCount = 0;
-    let notifications: any[] = [];
+    let showUserMenu = $state(false);
+    let showNotifDropdown = $state(false);
+    let unreadCount = $state(0);
+    let notifications: any[] = $state([]);
     let pollInterval: ReturnType<typeof setInterval>;
 
     onMount(() => {
         if ($authStore.isAuthenticated) {
             fetchUnreadCount();
-            pollInterval = setInterval(fetchUnreadCount, 30000); // Poll every 30s
+            pollInterval = setInterval(fetchUnreadCount, 30000);
         }
+
+        // Close dropdowns on outside click
+        function handleClick(e: MouseEvent) {
+            const target = e.target as HTMLElement;
+            if (!target.closest('.notif-area')) {
+                showNotifDropdown = false;
+            }
+            if (!target.closest('.user-area')) {
+                showUserMenu = false;
+            }
+        }
+
+        document.addEventListener('click', handleClick);
 
         return () => {
             if (pollInterval) clearInterval(pollInterval);
+            document.removeEventListener('click', handleClick);
         };
     });
 
@@ -29,23 +44,20 @@
         try {
             const data = await apiGet<{ count: number }>('/notifications/unread-count');
             unreadCount = data.count;
-        } catch {
-            // ignore
-        }
+        } catch {}
     }
 
     async function fetchNotifications() {
         try {
             const data = await apiGet<{ data: any[] }>('/notifications?limit=10&unreadOnly=true');
             notifications = data.data;
-        } catch {
-            // ignore
-        }
+        } catch {}
     }
 
-    async function toggleNotifDropdown() {
-        showNotifDropdown = !showNotifDropdown;
+    async function toggleNotifDropdown(e: MouseEvent) {
+        e.stopPropagation();
         showUserMenu = false;
+        showNotifDropdown = !showNotifDropdown;
         if (showNotifDropdown) {
             await fetchNotifications();
         }
@@ -56,14 +68,13 @@
             await apiPatch('/notifications/read-all');
             unreadCount = 0;
             notifications = notifications.map((n) => ({ ...n, isRead: true }));
-        } catch {
-            // ignore
-        }
+        } catch {}
     }
 
-    function toggleUserMenu() {
-        showUserMenu = !showUserMenu;
+    function toggleUserMenu(e: MouseEvent) {
+        e.stopPropagation();
         showNotifDropdown = false;
+        showUserMenu = !showUserMenu;
     }
 
     function handleLogout() {
@@ -74,25 +85,12 @@
     function toggleLanguage() {
         setLanguage($currentLanguage === 'FR' ? 'EN' : 'FR');
     }
-
-    // Close dropdowns on outside click
-    function handleWindowClick(e: MouseEvent) {
-        const target = e.target as HTMLElement;
-        if (!target.closest('.notif-dropdown') && !target.closest('.notif-trigger')) {
-            showNotifDropdown = false;
-        }
-        if (!target.closest('.user-dropdown') && !target.closest('.user-trigger')) {
-            showUserMenu = false;
-        }
-    }
 </script>
-
-<svelte:window on:click={handleWindowClick} />
 
 <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6">
     <!-- Left: hamburger (mobile) -->
     <button
-            on:click={onToggleSidebar}
+            onclick={onToggleSidebar}
             class="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100"
             aria-label="Toggle menu"
     >
@@ -102,23 +100,23 @@
     </button>
 
     <!-- Spacer -->
-    <div class="flex-1" />
+    <div class="flex-1"></div>
 
     <!-- Right: language toggle + notifications + user -->
     <div class="flex items-center gap-2">
         <!-- Language toggle -->
         <button
-                on:click={toggleLanguage}
+                onclick={toggleLanguage}
                 class="px-2 py-1 text-xs font-semibold rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
         >
             {$currentLanguage === 'FR' ? 'EN' : 'FR'}
         </button>
 
         <!-- Notifications bell -->
-        <div class="relative">
+        <div class="relative notif-area">
             <button
-                    on:click={toggleNotifDropdown}
-                    class="notif-trigger relative p-2 rounded-lg text-gray-500 hover:bg-gray-100"
+                    onclick={toggleNotifDropdown}
+                    class="relative p-2 rounded-lg text-gray-500 hover:bg-gray-100"
                     aria-label="Notifications"
             >
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,14 +130,13 @@
                 {/if}
             </button>
 
-            <!-- Notification dropdown -->
             {#if showNotifDropdown}
-                <div class="notif-dropdown absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                <div class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
                     <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100">
                         <h3 class="text-sm font-semibold text-gray-900">{$t('notifications.title')}</h3>
                         {#if unreadCount > 0}
                             <button
-                                    on:click={markAllRead}
+                                    onclick={markAllRead}
                                     class="text-xs text-blue-600 hover:text-blue-700 font-medium"
                             >
                                 {$t('notifications.markAllRead')}
@@ -166,7 +163,7 @@
                     </div>
                     <a
                             href="/notifications"
-                            on:click={() => (showNotifDropdown = false)}
+                            onclick={() => (showNotifDropdown = false)}
                             class="block px-4 py-3 text-center text-sm text-blue-600 hover:bg-gray-50 border-t border-gray-100 font-medium"
                     >
                         {$t('notifications.title')} →
@@ -176,10 +173,10 @@
         </div>
 
         <!-- User avatar & dropdown -->
-        <div class="relative">
+        <div class="relative user-area">
             <button
-                    on:click={toggleUserMenu}
-                    class="user-trigger flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-100"
+                    onclick={toggleUserMenu}
+                    class="flex items-center gap-2 p-1.5 rounded-lg hover:bg-gray-100"
             >
                 <div
                         class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-semibold"
@@ -189,10 +186,10 @@
             </button>
 
             {#if showUserMenu}
-                <div class="user-dropdown absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1">
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1">
                     <a
                             href="/profile"
-                            on:click={() => (showUserMenu = false)}
+                            onclick={() => (showUserMenu = false)}
                             class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -202,7 +199,7 @@
                         {$t('nav.profile')}
                     </a>
                     <button
-                            on:click={handleLogout}
+                            onclick={handleLogout}
                             class="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
