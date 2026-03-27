@@ -6,7 +6,7 @@
     import { api } from '$lib/api/client';
 
     // If there's a token in the URL, show the reset form. Otherwise, show the "enter email" form.
-    $: token = $page.url.searchParams.get('token') || '';
+    let token = $derived($page.url.searchParams.get('token') || '');
 
     let email = $state('');
     let password = $state('');

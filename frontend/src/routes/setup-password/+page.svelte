@@ -10,7 +10,7 @@
     let error = $state('');
     let loading = $state(false);
 
-    $: token = $page.url.searchParams.get('token') || '';
+    let token = $derived($page.url.searchParams.get('token') || '');
 
     async function handleSubmit(e: Event) {
         e.preventDefault();
