@@ -11,7 +11,9 @@ import {
     UploadedFiles,
     UseGuards,
     UseInterceptors,
+    Res
 } from '@nestjs/common';
+import express from 'express';
 import {FilesInterceptor} from '@nestjs/platform-express';
 import {diskStorage} from 'multer';
 import {extname, join} from 'path';
@@ -46,7 +48,8 @@ export class LeavesController {
     constructor(
         private leavesService: LeavesService,
         private prisma: PrismaService,
-    ) {}
+    ) {
+    }
 
     // ==========================================================================
     // POST /leaves — create leave request
@@ -61,6 +64,37 @@ export class LeavesController {
     }
 
     // ==========================================================================
+    // GET /leaves/attachments/:attachmentId — download/view attachment
+    // ==========================================================================
+
+    @Get('attachments/:attachmentId')
+    async downloadAttachment(
+        @Param('attachmentId') attachmentId: string,
+        @Res() res: express.Response,
+    ) {
+        const attachment = await this.prisma.leaveAttachment.findUnique({
+            where: { id: attachmentId },
+        });
+
+        if (!attachment) {
+            res.status(404).json({ message: 'Attachment not found' });
+            return;
+        }
+
+        const filePath = attachment.filePath;
+        const fs = await import('fs');
+
+        if (!fs.existsSync(filePath)) {
+            res.status(404).json({ message: 'File not found on server' });
+            return;
+        }
+
+        res.setHeader('Content-Type', attachment.mimeType);
+        res.setHeader('Content-Disposition', `inline; filename="${attachment.fileName}"`);
+        fs.createReadStream(filePath).pipe(res);
+    }
+
+    // ==========================================================================
     // GET /leaves — list leave requests (scoped by role)
     // ==========================================================================
 
@@ -68,7 +102,7 @@ export class LeavesController {
     async findAll(
         @Query() query: QueryLeavesDto,
         @CurrentUser() user: { id: string; email: string; globalRole: GlobalRole },
-        ) {
+    ) {
         return this.leavesService.findAll(query, user);
     }
 
@@ -195,7 +229,7 @@ export class LeavesController {
 
     @Post(':id/attachments')
     @UseInterceptors(
-        FilesInterceptor('files', 5, { storage: uploadStorage }),
+        FilesInterceptor('files', 5, {storage: uploadStorage}),
     )
     async uploadAttachments(
         @CurrentUser('id') userId: string,
@@ -204,7 +238,7 @@ export class LeavesController {
     ) {
         // Verify the request exists and belongs to the user
         const request = await this.prisma.leaveRequest.findUnique({
-            where: { id: leaveRequestId },
+            where: {id: leaveRequestId},
         });
 
         if (!request) {
