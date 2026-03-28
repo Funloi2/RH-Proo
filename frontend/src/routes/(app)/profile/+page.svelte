@@ -157,7 +157,7 @@
                         <div class="mb-4 p-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">{editError}</div>
                     {/if}
 
-                    <form onsubmit|preventDefault={handleSave} class="space-y-4">
+                    <form onsubmit={handleSave()}  class="space-y-4">
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">{$t('users.name')}</label>
