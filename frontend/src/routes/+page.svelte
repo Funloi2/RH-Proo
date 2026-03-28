@@ -5,7 +5,7 @@
 
     onMount(() => {
         if ($authStore.isAuthenticated) {
-            goto('/dashboard');
+            goto('/calendar');
         } else {
             goto('/login');
         }

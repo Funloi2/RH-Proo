@@ -4,6 +4,7 @@
     import { t } from '$lib/i18n';
 
     let { open = $bindable(false) } = $props();
+
     let user = $derived($authStore.user);
     let isAdmin = $derived(user?.globalRole === 'ADMIN');
     let currentPath = $derived($page.url.pathname);
@@ -16,7 +17,6 @@
     }
 
     const navItems: NavItem[] = [
-        { href: '/dashboard', label: 'nav.dashboard', icon: '📊' },
         { href: '/calendar', label: 'nav.calendar', icon: '📅' },
         { href: '/leaves', label: 'nav.leaves', icon: '🏖️' },
         { href: '/tasks', label: 'nav.tasks', icon: '✅' },
@@ -29,7 +29,6 @@
     let visibleItems = $derived(navItems.filter((item) => !item.adminOnly || isAdmin));
 
     function isActive(href: string): boolean {
-        if (href === '/dashboard') return currentPath === '/dashboard';
         return currentPath.startsWith(href);
     }
 
@@ -38,13 +37,12 @@
     }
 </script>
 
-<!-- Mobile overlay -->
 {#if open}
     <button
             class="fixed inset-0 bg-black/40 z-40 lg:hidden"
-            on:click={() => (open = false)}
+            onclick={() => (open = false)}
             aria-label="Close menu"
-    />
+    ></button>
 {/if}
 
 <aside
@@ -53,20 +51,18 @@
     w-64 lg:translate-x-0
     {open ? 'translate-x-0' : '-translate-x-full'}"
 >
-    <!-- Logo -->
     <div class="h-16 flex items-center px-6 border-b border-gray-200">
         <span class="text-xl font-bold text-blue-600">HR</span>
         <span class="text-xl font-bold text-gray-800">-Proo</span>
     </div>
 
-    <!-- Navigation -->
     <nav class="flex-1 py-4 overflow-y-auto">
         <ul class="space-y-1 px-3">
             {#each visibleItems as item}
                 <li>
                     <a
                             href={item.href}
-                            on:click={handleNavClick}
+                            onclick={handleNavClick}
                             class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
               {isActive(item.href)
                 ? 'bg-blue-50 text-blue-700'
@@ -80,7 +76,6 @@
         </ul>
     </nav>
 
-    <!-- User info at bottom -->
     {#if user}
         <div class="p-4 border-t border-gray-200">
             <div class="flex items-center gap-3">

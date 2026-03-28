@@ -26,7 +26,7 @@
 
             authStore.login(data.user, data.tokens.accessToken, data.tokens.refreshToken);
             setLanguage(data.user.language);
-            goto('/dashboard');
+            goto('/calendar');
         } catch (err: any) {
             error = err.message || 'Login failed';
         } finally {
@@ -37,14 +37,12 @@
 
 <div class="min-h-screen bg-gray-50 flex items-center justify-center px-4">
     <div class="w-full max-w-md">
-        <!-- Logo -->
         <div class="text-center mb-8">
             <h1 class="text-3xl font-bold">
                 <span class="text-blue-600">HR</span><span class="text-gray-800">-Proo</span>
             </h1>
         </div>
 
-        <!-- Card -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
             <h2 class="text-xl font-semibold text-gray-900 mb-6">{$t('auth.login')}</h2>
 
@@ -54,7 +52,7 @@
                 </div>
             {/if}
 
-            <form on:submit={handleLogin} class="space-y-4">
+            <form onsubmit={handleLogin} class="space-y-4">
                 <div>
                     <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
                         {$t('auth.email')}
@@ -98,10 +96,9 @@
             </div>
         </div>
 
-        <!-- Language toggle -->
         <div class="mt-4 text-center">
             <button
-                    on:click={() => setLanguage($currentLanguage === 'FR' ? 'EN' : 'FR')}
+                    onclick={() => setLanguage($currentLanguage === 'FR' ? 'EN' : 'FR')}
                     class="text-sm text-gray-500 hover:text-gray-700"
             >
                 {$currentLanguage === 'FR' ? 'English' : 'Français'}
