@@ -21,7 +21,6 @@
             pollInterval = setInterval(fetchUnreadCount, 30000);
         }
 
-        // Close dropdowns on outside click
         function handleClick(e: MouseEvent) {
             const target = e.target as HTMLElement;
             if (!target.closest('.notif-area')) {
@@ -52,6 +51,18 @@
             const data = await apiGet<{ data: any[] }>('/notifications?limit=10&unreadOnly=true');
             notifications = data.data;
         } catch {}
+    }
+
+    function getNotifMessage(notif: any): string {
+        // typeKey is snake_case like "added_to_group"
+        // Translation key is "notifications.added_to_group"
+        const key = `notifications.${notif.typeKey}`;
+        const translated = $t(key, notif.params || {});
+        if (translated === key) {
+            // Fallback: make it readable
+            return notif.typeKey.replace(/_/g, ' ');
+        }
+        return translated;
     }
 
     async function toggleNotifDropdown(e: MouseEvent) {
@@ -88,7 +99,6 @@
 </script>
 
 <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6">
-    <!-- Left: hamburger (mobile) -->
     <button
             onclick={onToggleSidebar}
             class="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100"
@@ -99,12 +109,9 @@
         </svg>
     </button>
 
-    <!-- Spacer -->
     <div class="flex-1"></div>
 
-    <!-- Right: language toggle + notifications + user -->
     <div class="flex items-center gap-2">
-        <!-- Language toggle -->
         <button
                 onclick={toggleLanguage}
                 class="px-2 py-1 text-xs font-semibold rounded border border-gray-300 text-gray-600 hover:bg-gray-50 transition-colors"
@@ -112,7 +119,6 @@
             {$currentLanguage === 'FR' ? 'EN' : 'FR'}
         </button>
 
-        <!-- Notifications bell -->
         <div class="relative notif-area">
             <button
                     onclick={toggleNotifDropdown}
@@ -152,7 +158,7 @@
                             {#each notifications as notif}
                                 <div class="px-4 py-3 border-b border-gray-50 hover:bg-gray-50 {notif.isRead ? 'opacity-60' : ''}">
                                     <p class="text-sm text-gray-800">
-                                        {$t(`notifications.${notif.typeKey}`, notif.params || {})}
+                                        {getNotifMessage(notif)}
                                     </p>
                                     <p class="text-xs text-gray-400 mt-1">
                                         {new Date(notif.createdAt).toLocaleString()}
@@ -172,7 +178,6 @@
             {/if}
         </div>
 
-        <!-- User avatar & dropdown -->
         <div class="relative user-area">
             <button
                     onclick={toggleUserMenu}

@@ -96,7 +96,10 @@
     "balance": "Solde de congés",
     "attachments": "Pièces jointes",
     "uploadFile": "Joindre un fichier",
-    "pendingReview": "En attente de validation"
+    "pendingReview": "En attente de validation",
+    "approveAll": "Tout approuver",
+    "refuseAll": "Tout refuser",
+    "selected": "sélectionnée(s)"
   },
   "tasks": {
     "title": "Tâches",
@@ -116,15 +119,15 @@
     "markAllRead": "Tout marquer comme lu",
     "clearRead": "Supprimer les lues",
     "noNotifications": "Aucune notification",
-    "leaveSubmitted": "Nouvelle demande de congé soumise",
-    "leaveApproved": "Votre demande de congé a été acceptée",
-    "leaveRefused": "Votre demande de congé a été refusée",
-    "taskAssigned": "Une nouvelle tâche vous a été assignée",
-    "taskClosed": "Une tâche a été fermée",
-    "addedToGroup": "Vous avez été ajouté à un groupe",
-    "removedFromGroup": "Vous avez été retiré d'un groupe",
-    "roleChanged": "Votre rôle a été modifié",
-    "balanceAdjusted": "Votre solde de congés a été ajusté"
+    "leave_submitted": "Nouvelle demande de congé soumise",
+    "leave_approved": "Votre demande de congé a été acceptée",
+    "leave_refused": "Votre demande de congé a été refusée",
+    "task_assigned": "Une nouvelle tâche vous a été assignée",
+    "task_closed": "Une tâche a été fermée",
+    "added_to_group": "Vous avez été ajouté à un groupe",
+    "removed_from_group": "Vous avez été retiré d'un groupe",
+    "role_changed": "Votre rôle a été modifié",
+    "balance_adjusted": "Votre solde de congés a été ajusté"
   },
   "common": {
     "save": "Enregistrer",
@@ -144,6 +147,7 @@
     "previous": "Précédent",
     "next": "Suivant",
     "days": "jours",
-    "day": "jour"
+    "day": "jour",
+    "all": "Tous"
   }
 }

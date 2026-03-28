@@ -96,7 +96,10 @@
     "balance": "Leave Balance",
     "attachments": "Attachments",
     "uploadFile": "Upload File",
-    "pendingReview": "Pending Review"
+    "pendingReview": "Pending Review",
+    "approveAll": "Approve all",
+    "refuseAll": "Refuse all",
+    "selected": "selected"
   },
   "tasks": {
     "title": "Tasks",
@@ -116,15 +119,15 @@
     "markAllRead": "Mark all as read",
     "clearRead": "Clear read",
     "noNotifications": "No notifications",
-    "leaveSubmitted": "New leave request submitted",
-    "leaveApproved": "Your leave request has been approved",
-    "leaveRefused": "Your leave request has been refused",
-    "taskAssigned": "You have been assigned a new task",
-    "taskClosed": "A task has been closed",
-    "addedToGroup": "You have been added to a group",
-    "removedFromGroup": "You have been removed from a group",
-    "roleChanged": "Your role has been changed",
-    "balanceAdjusted": "Your leave balance has been adjusted"
+    "leave_submitted": "New leave request submitted",
+    "leave_approved": "Your leave request has been approved",
+    "leave_refused": "Your leave request has been refused",
+    "task_assigned": "You have been assigned a new task",
+    "task_closed": "A task has been closed",
+    "added_to_group": "You have been added to a group",
+    "removed_from_group": "You have been removed from a group",
+    "role_changed": "Your role has been changed",
+    "balance_adjusted": "Your leave balance has been adjusted"
   },
   "common": {
     "save": "Save",
@@ -144,6 +147,7 @@
     "previous": "Previous",
     "next": "Next",
     "days": "days",
-    "day": "day"
+    "day": "day",
+    "all": "All"
   }
 }
